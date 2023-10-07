@@ -12,7 +12,7 @@ By default build artifacts will be inside build/${target_name} directory:
 - test binary will be located at `build/tglang-tester/tglang-tester`
 
 Examples:
-'''
+```
 #all commands must be run from project root directory
 
 #build all targets
@@ -23,7 +23,7 @@ Examples:
 
 #build just required target, for example libtglang
 ./build.py --target libtglang
-'''
+```
 
 ### Run & export:
 Before run or export build all targets, see `build` section for details how to build and where to find artifacts.
