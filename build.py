@@ -46,6 +46,7 @@ def main():
         for dep in DEPENDENCIES[target]:
             traverse(dep)
         
+        print(f"Begin to exec target: `{target}`")
         ACTIONS[target](target, context)
     
     targets = set(args.target)
@@ -110,8 +111,12 @@ def build_target(target, context):
 def link_lib(_target, context):
     src = os.path.join(context["build_dir"], LIB_TARGET, LIB_BINARY_NAME)
     dst = os.path.join(context["source_dir"], TESTER_TARGET, LIB_BINARY_NAME)
-    if os.path.exists(dst):
+    try:
+        # can't detect wiether dst exists without exception, so remove it in anycase and ignore exception
         os.remove(dst)
+    except FileNotFoundError:
+        pass
+
     os.symlink(src=src, dst=dst)
 
 

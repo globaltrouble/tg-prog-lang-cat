@@ -1,2 +1,5 @@
 build
+build-docker
 libtglang.so
+examples
+.vscode

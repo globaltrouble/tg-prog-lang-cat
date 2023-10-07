@@ -4,6 +4,7 @@
 - install python3
 - install your favorite compiler (for example gcc/clang)
 - install cmake 
+See `Dockerfile` example for Debian-10
 
 ### Build:
 By default build artifacts will be inside build/${target_name} directory:
@@ -37,3 +38,25 @@ For export:
 - copy artifact `libtglang.so` from `libtglang` target to your library path
 - add libtglang sources dir to your include path
 
+
+### Docker build & run:
+- Install docker
+- Build container:
+    ```
+    #build container before run
+    docker build . -t tglang
+    ```
+- Run build script from docker:
+    ```
+    #build and link binaries, then run tester on test file
+    #use build script as an examples, 
+    #but keep free to add your examples to `examples` dir in project root and run test on it.
+    docker run -v .:/app -it tglang --test-file /app/build.py
+    ```
+Keep in mind, you need to forward project root directory to container via `-v` argument.
+Base command is `docker run -v .:/app -it tglang`, after it will run build script with next arguments.
+So you can work with container as with build script (pass same arguments).
+To run shell in docker container instead of build script:
+```
+docker run --entrypoint bash -v .:/app -it tglang
+```
