@@ -13,7 +13,7 @@ Collect dataset for those classes:
  - [ ] TGLANG_LANGUAGE_KEYMAN
  - [ ] TGLANG_LANGUAGE_LOGO
  - [ ] TGLANG_LANGUAGE_OPENEDGE_ABL
- - [ ] TGLANG_LANGUAGE_REGEX (Vadim in progress)
+ - [X] TGLANG_LANGUAGE_REGEX
  - [ ] TGLANG_LANGUAGE_TL
 
 
