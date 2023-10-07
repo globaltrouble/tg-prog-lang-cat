@@ -12,15 +12,15 @@ By default build artifacts will be inside build/${target_name} directory:
 
 Examples:
 '''
-# all commands must be run from project root directory
+#all commands must be run from project root directory
 
-# build all targets
+#build all targets
 ./build.py
 
-# remove artifacts/cache/config from previous build and rebuild from scratch
+#remove artifacts/cache/config from previous build and rebuild from scratch
 ./build.py --clean
 
-# build just required target, for example libtglang
+#build just required target, for example libtglang
 ./build.py --target libtglang
 '''
 
