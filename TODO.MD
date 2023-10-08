@@ -1,0 +1,32 @@
+## ToDo
+
+Collect dataset for those classes:
+
+ - [ ] TGLANG_LANGUAGE_1S_ENTERPRISE
+ - [ ] TGLANG_LANGUAGE_APEX
+ - [ ] TGLANG_LANGUAGE_DELPHI
+ - [ ] TGLANG_LANGUAGE_FIFT
+ - [ ] TGLANG_LANGUAGE_FUNC
+ - [X] TGLANG_LANGUAGE_GRADLE
+ - [ ] TGLANG_LANGUAGE_HACK
+ - [ ] TGLANG_LANGUAGE_ICON
+ - [ ] TGLANG_LANGUAGE_KEYMAN
+ - [ ] TGLANG_LANGUAGE_LOGO
+ - [ ] TGLANG_LANGUAGE_OPENEDGE_ABL
+ - [X] TGLANG_LANGUAGE_REGEX
+ - [ ] TGLANG_LANGUAGE_TL
+
+
+Fix issue with overlapping classes:
+
+ - [ ] TGLANG_LANGUAGE_PL_SQL (overlapping with TGLANG_LANGUAGE_SQL)
+ - [ ] TGLANG_LANGUAGE_VBSCRIPT (overlapping with TGLANG_LANGUAGE_VISUAL_BASIC)
+ - [ ] TGLANG_LANGUAGE_LISP (overlapping with TGLANG_LANGUAGE_COMMON_LISP)
+
+
+
+Modeling TODOs:
+- [X] Resolve the issue with the low accuracy without shuffling
+- [ ] Migrate the solution to use it on the dataset from Vadim
+- [ ] Write the script for per-class evaluation
+- [ ] Try the approach with removing the comments from the source code and evaluate
