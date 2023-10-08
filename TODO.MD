@@ -23,3 +23,10 @@ Fix issue with overlapping classes:
  - [ ] TGLANG_LANGUAGE_VBSCRIPT (overlapping with TGLANG_LANGUAGE_VISUAL_BASIC)
  - [ ] TGLANG_LANGUAGE_LISP (overlapping with TGLANG_LANGUAGE_COMMON_LISP)
 
+
+
+Modeling TODOs:
+- [X] Resolve the issue with the low accuracy without shuffling
+- [ ] Migrate the solution to use it on the dataset from Vadim
+- [ ] Write the script for per-class evaluation
+- [ ] Try the approach with removing the comments from the source code and evaluate
