@@ -2,19 +2,19 @@
 
 Collect dataset for those classes:
 
- - [ ] TGLANG_LANGUAGE_1S_ENTERPRISE
- - [ ] TGLANG_LANGUAGE_APEX
- - [ ] TGLANG_LANGUAGE_DELPHI
- - [ ] TGLANG_LANGUAGE_FIFT
- - [ ] TGLANG_LANGUAGE_FUNC
+ - [X] TGLANG_LANGUAGE_1S_ENTERPRISE
+ - [X] TGLANG_LANGUAGE_APEX
+ - [ ] TGLANG_LANGUAGE_DELPHI (can download files from here https://github.com/danieleteti/delphimvcframework/tree/master)
+ - [ ] TGLANG_LANGUAGE_FIFT (very rare language https://github.com/Piterden/TON-docs/blob/master/Fift.%20A%20Brief%20Introduction.md)
+ - [ ] TGLANG_LANGUAGE_FUNC (does it mean functional languages like Haskell)
  - [X] TGLANG_LANGUAGE_GRADLE
- - [ ] TGLANG_LANGUAGE_HACK
- - [ ] TGLANG_LANGUAGE_ICON
- - [ ] TGLANG_LANGUAGE_KEYMAN
- - [ ] TGLANG_LANGUAGE_LOGO
- - [ ] TGLANG_LANGUAGE_OPENEDGE_ABL
+ - [X] TGLANG_LANGUAGE_HACK
+ - [ ] TGLANG_LANGUAGE_ICON (can download snippets from here https://github.com/gtownsend/icon)
+ - [ ] TGLANG_LANGUAGE_KEYMAN (very rare language fot keyboards, maybe can download something from here https://github.com/keymanapp/keyman)
+ - [X] TGLANG_LANGUAGE_LOGO
+ - [X] TGLANG_LANGUAGE_OPENEDGE_ABL
  - [X] TGLANG_LANGUAGE_REGEX
- - [ ] TGLANG_LANGUAGE_TL
+ - [X] TGLANG_LANGUAGE_TL
 
 
 Fix issue with overlapping classes:
