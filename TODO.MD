@@ -4,7 +4,7 @@ Collect dataset for those classes:
 
  - [X] TGLANG_LANGUAGE_1S_ENTERPRISE
  - [X] TGLANG_LANGUAGE_APEX
- - [ ] TGLANG_LANGUAGE_DELPHI (can download files from here https://github.com/danieleteti/delphimvcframework/tree/master)
+ - [ ] TGLANG_LANGUAGE_DELPHI (can download files from here https://github.com/danieleteti/delphimvcframework/tree/master) <-> or is it pascal
  - [ ] TGLANG_LANGUAGE_FIFT (very rare language https://github.com/Piterden/TON-docs/blob/master/Fift.%20A%20Brief%20Introduction.md)
  - [ ] TGLANG_LANGUAGE_FUNC (does it mean functional languages like Haskell)
  - [X] TGLANG_LANGUAGE_GRADLE
