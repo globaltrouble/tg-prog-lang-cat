@@ -122,7 +122,7 @@ def build_target(target, context):
         if not os.path.exists(d):
             os.makedirs(d)
 
-    check_call(["cmake", f"-DCMAKE_BUILD_TYPE={context['build_type']}" "-S", source_dir, "-B", build_dir])
+    check_call(["cmake", f"-DCMAKE_BUILD_TYPE={context['build_type']}", "-S", source_dir, "-B", build_dir])
     check_call(["cmake", "--build", build_dir, "--parallel"])
 
 
