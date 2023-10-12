@@ -20,6 +20,13 @@ namespace {
 static std::atomic<bool> wasInit = { false };
 static std::vector<std::vector<float>> inputs;
 
+static std::vector<std::string> input_names;
+static std::vector<std::string> output_names;
+static std::vector<const char*> input_names_char;
+static std::vector<const char*> output_names_char;
+std::vector<std::int64_t> input_shape;
+
+
 const char * model_file = "/home/sun/Downloads/tg_challenge/mnb-1.onnx";
 static Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "example-model-explorer");
 static Ort::SessionOptions session_options;
@@ -38,6 +45,8 @@ void init() {
   if (alreadyInit) {
     return;
   }
+
+  // TODO: wait till init for threadsafe use!
 
   const char * inptPath = "/home/sun/Downloads/tg_challenge/inputs.csv";
   inputs.reserve(rows);
@@ -72,6 +81,31 @@ void init() {
   std::cout << "Loaded inputs in: " << elapsed.count() << "sec \n";
 
   session = {Ort::Session(env, model_file, session_options)};
+  size_t const inputs_count = session->GetInputCount();
+  assert(inputs_count == 1);
+  input_shape = session->GetInputTypeInfo(0).GetTensorTypeAndShapeInfo().GetShape();
+   // some models might have negative shape values to indicate dynamic shape, e.g., for variable batch size.
+  for (auto& s : input_shape) {
+    if (s < 0) {
+      s = 1;
+    }
+  }
+
+  Ort::AllocatorWithDefaultOptions allocator;
+  input_names.emplace_back(session->GetInputNameAllocated(0, allocator).get());
+
+  for (std::size_t i = 0; i < session->GetOutputCount(); i++) {
+    output_names.emplace_back(session->GetOutputNameAllocated(i, allocator).get());
+  }
+
+  input_names_char.resize(input_names.size(), nullptr);
+  output_names_char.resize(output_names.size(), nullptr);
+
+  std::transform(std::begin(input_names), std::end(input_names), std::begin(input_names_char),
+                 [&](const std::string& str) { return str.c_str(); });
+
+  std::transform(std::begin(output_names), std::end(output_names), std::begin(output_names_char),
+                 [&](const std::string& str) { return str.c_str(); });
 }
 
 template <typename T>
@@ -91,67 +125,8 @@ std::string print_shape(const std::vector<std::int64_t>& v) {
   return ss.str();
 }
 
-int calculate_product(const std::vector<std::int64_t>& v) {
-  int total = 1;
-  for (auto& i : v) total *= i;
-  return total;
-}
-
 void predict(std::vector<float> & input_tensor_values) {
   // print name/shape of inputs
-  Ort::AllocatorWithDefaultOptions allocator;
-  std::vector<std::string> input_names;
-  std::vector<std::int64_t> input_shapes;
-  std::cout << "Input Node Name/Shape (" << input_names.size() << "):" << std::endl;
-  for (std::size_t i = 0; i < session->GetInputCount(); i++) {
-    input_names.emplace_back(session->GetInputNameAllocated(i, allocator).get());
-    input_shapes = session->GetInputTypeInfo(i).GetTensorTypeAndShapeInfo().GetShape();
-    std::cout << "\t" << input_names.at(i) << " : " << print_shape(input_shapes) << std::endl;
-  }
-  // some models might have negative shape values to indicate dynamic shape, e.g., for variable batch size.
-  for (auto& s : input_shapes) {
-    if (s < 0) {
-      s = 1;
-    }
-  }
-
-  // print name/shape of outputs
-  std::vector<std::string> output_names;
-  std::cout << "Output Node Name/Shape (" << output_names.size() << "):" << std::endl;
-  for (std::size_t i = 0; i < session->GetOutputCount(); i++) {
-    output_names.emplace_back(session->GetOutputNameAllocated(i, allocator).get());
-    auto out_type = session->GetOutputTypeInfo(i);
-    auto tensor_shape_info = out_type.GetTensorTypeAndShapeInfo();
-
-    std::vector<int64_t> output_shapes;
-    if (i != 1) {
-      output_shapes = tensor_shape_info.GetShape();
-    }
-    std::cout << "\t" << output_names.at(i) << " : " << print_shape(output_shapes) << std::endl;
-  }
-
-  // Assume model has 1 input node and 1 output node.
-  std::cout << "Inputs total: " << input_names.size() << ", outputs total: " << output_names.size() << "\n";
-  // assert(input_names.size() == 1 && output_names.size() == cols);
-
-  // Create a single Ort tensor of random numbers
-  auto input_shape = input_shapes;
-  auto total_number_elements = calculate_product(input_shape);
-  std::cout << "Total number of elements is: " << total_number_elements << "\n";
-
-  // double-check the dimensions of the input tensor
-  // assert(input_tensors[0].IsTensor() && input_tensors[0].GetTensorTypeAndShapeInfo().GetShape() == input_shape);
-  // std::cout << "\ninput_tensor shape: " << print_shape(input_tensors[0].GetTensorTypeAndShapeInfo().GetShape()) << std::endl;
-
-  // pass data through model
-  std::vector<const char*> input_names_char(input_names.size(), nullptr);
-  std::transform(std::begin(input_names), std::end(input_names), std::begin(input_names_char),
-                 [&](const std::string& str) { return str.c_str(); });
-
-  std::vector<const char*> output_names_char(output_names.size(), nullptr);
-  std::transform(std::begin(output_names), std::end(output_names), std::begin(output_names_char),
-                 [&](const std::string& str) { return str.c_str(); });
-
   // generate random numbers in the range [0, 255]
   // std::vector<float> input_tensor_values(total_number_elements);
   // std::generate(input_tensor_values.begin(), input_tensor_values.end(), [&] { return rand() % 255; });
