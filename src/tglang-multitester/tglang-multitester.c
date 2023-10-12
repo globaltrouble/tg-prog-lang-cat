@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
     // profile in microseconds
     const double US_IN_SEC = 1000000.0;
     int elapsed_us = (clock()-begin)/(double)(CLOCKS_PER_SEC/US_IN_SEC);
-    printf("File: '%s', tag: '%d', file size: %d, timing us: '%d'\n", fname, enum_code, fsize, elapsed_us);
+    printf("File: '%s', tag: '%d', file size: %ld, timing us: '%d'\n", fname, enum_code, fsize, elapsed_us);
   }
   
   closedir(d);
