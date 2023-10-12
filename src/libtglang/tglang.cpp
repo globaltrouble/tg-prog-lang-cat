@@ -14,8 +14,21 @@
 #include <optional>
 #include <algorithm>
 #include <sstream>
+#include <iomanip>
 
 namespace {
+
+struct ProfileIt {
+  char const * const m_name = nullptr;
+  std::chrono::steady_clock::time_point m_begin;
+  
+  ProfileIt(char const * const name) : m_name(name), m_begin(std::chrono::steady_clock::now()) {}
+
+  ~ProfileIt() {
+    auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - m_begin);
+    std::cerr << std::fixed << std::setprecision(6) << (elapsed.count() * 0.000001) << " sec \n";
+  }
+};
 
 std::atomic<bool> wasInit = { false };
 std::vector<std::vector<float>> inputs;
@@ -25,7 +38,6 @@ std::vector<std::string> output_names;
 std::vector<const char*> input_names_char;
 std::vector<const char*> output_names_char;
 std::vector<std::int64_t> input_shape;
-
 
 const char * model_file = "/home/sun/Downloads/tg_challenge/mnb-1.onnx";
 Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "example-model-explorer");
@@ -54,32 +66,30 @@ void init() {
   std::ifstream in(inptPath);
   std::cin.rdbuf(in.rdbuf());
 
-  std::cout << "Parsing inputs ...\n";
-  auto start = std::chrono::steady_clock::now();
-  for (size_t r = 0; r < rows; r++) {
-    std::vector<float> row(cols, 0);
-    for (size_t c = 0; c < cols; c++) {
-      std::cin >> row[c];
-      
-      char del;
-      std::cin >> del;
-      // char expectedDel = c < cols-1 ? ',' : '\n';
-      const char expectedDel = ',';
-      if (c < cols - 1 && del != expectedDel) {
-        std::cerr << "Err wrong delimiter, expected: `" << expectedDel << "`, got: `" << del 
-                  << "`, at row:" << r << ", col:" << c << std::endl;
-        assert(false);
+  {
+    auto profiler = ProfileIt("Parsing inputs");
+
+    for (size_t r = 0; r < rows; r++) {
+      std::vector<float> row(cols, 0);
+      for (size_t c = 0; c < cols; c++) {
+        std::cin >> row[c];
+        
+        char del;
+        std::cin >> del;
+        // char expectedDel = c < cols-1 ? ',' : '\n';
+        const char expectedDel = ',';
+        if (c < cols - 1 && del != expectedDel) {
+          std::cerr << "Err wrong delimiter, expected: `" << expectedDel << "`, got: `" << del 
+                    << "`, at row:" << r << ", col:" << c << std::endl;
+          assert(false);
+        }
+      }
+      inputs.push_back(std::move(row));
+      if (r % 10 == 9) {
+        std::cout << "Parsed " << r+1 <<" inputs, from" << rows << "\n";
       }
     }
-    inputs.push_back(std::move(row));
-    if (r % 10 == 9) {
-      std::cout << "Parsed " << r+1 <<" inputs, from" << rows << "\n";
-    }
   }
-
-  auto elapsed = 0.001 * std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start);
-  std::cout << "Loaded inputs in: " << elapsed.count() << "sec \n";
-
   session = {Ort::Session(env, model_file, session_options)};
   size_t const inputs_count = session->GetInputCount();
   assert(inputs_count == 1);
