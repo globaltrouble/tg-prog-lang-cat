@@ -17,24 +17,24 @@
 
 namespace {
 
-static std::atomic<bool> wasInit = { false };
-static std::vector<std::vector<float>> inputs;
+std::atomic<bool> wasInit = { false };
+std::vector<std::vector<float>> inputs;
 
-static std::vector<std::string> input_names;
-static std::vector<std::string> output_names;
-static std::vector<const char*> input_names_char;
-static std::vector<const char*> output_names_char;
+std::vector<std::string> input_names;
+std::vector<std::string> output_names;
+std::vector<const char*> input_names_char;
+std::vector<const char*> output_names_char;
 std::vector<std::int64_t> input_shape;
 
 
 const char * model_file = "/home/sun/Downloads/tg_challenge/mnb-1.onnx";
-static Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "example-model-explorer");
-static Ort::SessionOptions session_options;
-static std::optional<Ort::Session> session;
+Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "example-model-explorer");
+Ort::SessionOptions session_options;
+std::optional<Ort::Session> session;
 
-  // constexpr size_t rows = 200;
-  constexpr size_t rows = 10;
-  constexpr size_t cols = 764896;
+// constexpr size_t rows = 200;
+constexpr size_t rows = 10;
+constexpr size_t cols = 764896;
  
 void init() {
   bool expected = false;
