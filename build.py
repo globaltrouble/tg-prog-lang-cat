@@ -15,9 +15,13 @@ DEFAULT_BUILD_PATH = os.path.join(DEFAULT_SOURCE_PATH, "build")
 LIB_BINARY_NAME = "libtglang.so"
 TESTER_BINARY_NAME = "tglang-tester"
 MULTITESTER_BINARY_NAME = "tglang-multitester"
+ONNX_BINARY_NAME = "libonnxruntime.so"
 RUNNER_BINARY_NAME = "run-tglang.py"
 
 BINARY_DIR = "bin"
+
+RESOURCES_DIR = "resources"
+ONNX_MODEL_FILE_NAME = "model.onnx"
 
 LIB_TARGET = "libtglang"
 TESTER_TARGET = "tglang-tester"
@@ -154,7 +158,9 @@ def run_tester(_target, context):
     binary = os.path.join(context["bin_dir"], TESTER_BINARY_NAME)
     if not os.path.exists(binary):
         raise RuntimeError(f"Binary doesn't exists: `{binary}`")
-    check_call([binary, context["test_file"]], env={"LD_LIBRARY_PATH": context["bin_dir"]})
+    check_call(
+        [binary, context["test_file"]], env={"LD_LIBRARY_PATH": context["bin_dir"]}, cwd=context["bin_dir"]
+    )
 
 
 def copy_binaries(_target, context):
@@ -162,21 +168,32 @@ def copy_binaries(_target, context):
     multitester = os.path.join(context["build_dir"], MULTITESTER_TARGET, MULTITESTER_BINARY_NAME)
     lib = os.path.join(context["build_dir"], LIB_TARGET, LIB_BINARY_NAME)
     runner = os.path.join(DEFAULT_SOURCE_PATH, "scripts", RUNNER_BINARY_NAME)
+    
     targets = [tester, multitester, lib, runner]
+    
+    onnx_lib = os.path.join(context["source_dir"], "src", LIB_TARGET, "ort", "lib", ONNX_BINARY_NAME)
+    onnx_model = os.path.join(context["source_dir"], "src", RESOURCES_DIR, ONNX_MODEL_FILE_NAME)
 
-    for f in targets:
+    onnx_targets = [onnx_lib, onnx_model]
+
+    for f in targets + onnx_targets:
         if not os.path.exists(f):
             raise RuntimeError(f"No binary file: `{f}`")
     
-    dst = context["bin_dir"]
+    bin_dir = context["bin_dir"]
     try:
-        shutil.rmtree(dst)
+        shutil.rmtree(bin_dir)
     except FileNotFoundError:
         pass
-    os.makedirs(dst)
+    os.makedirs(bin_dir)
 
     for f in targets:
-        shutil.copy(f, os.path.join(dst, os.path.basename(f)))
+        shutil.copy(f, os.path.join(bin_dir, os.path.basename(f)))
+    
+    resources_dir = os.path.join(bin_dir, RESOURCES_DIR)
+    os.makedirs(resources_dir)
+    for f in onnx_targets:
+        shutil.copy(f, os.path.join(resources_dir, os.path.basename(f)))
 
 
 DEPENDENCIES = {
