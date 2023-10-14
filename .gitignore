@@ -2,5 +2,6 @@ build
 build-docker
 libtglang.so
 examples
+temp
 .vscode
 .ipynb_checkpoints
