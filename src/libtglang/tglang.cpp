@@ -10,6 +10,9 @@
 #include <chrono>
 #include <iomanip>
 #include <cstdlib>
+#include <cstring>
+
+#define LABEL_PREFIX "__label__"
 
 namespace {
 
@@ -71,7 +74,9 @@ enum TglangLanguage tglang_detect_programming_language(const char *text) {
   }
 
   auto const & res = result.front();
-  int converted = std::atoi(res.second.c_str());
+
+  // TODO: remove LABEL_PREFIX
+  int converted = std::atoi(res.second.c_str() + std::strlen(LABEL_PREFIX));
 
   // TODO: remove logs
   std::cerr << "Fasttext, class=" << res.second << ",converted=" << converted << ",prob=" << res.first << '\n';
