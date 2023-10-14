@@ -25,7 +25,7 @@ struct ProfileIt {
 
   ~ProfileIt() {
     auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - m_begin);
-    std::cerr << std::fixed << std::setprecision(6) << (elapsed.count() * 0.000001) << " sec \n";
+    std::cerr << m_name << std::fixed << std::setprecision(6) << (elapsed.count() * 0.000001) << " sec \n";
   }
 };
 
