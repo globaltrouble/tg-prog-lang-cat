@@ -17,7 +17,11 @@ TESTER_BINARY_NAME = "tglang-tester"
 MULTITESTER_BINARY_NAME = "tglang-multitester"
 RUNNER_BINARY_NAME = "run-tglang.py"
 
+FASTTEXT_MODEL_FNAME = "fasttext-model.bin"
+
 BINARY_DIR = "bin"
+
+RESOURCES_DIR = "resources"
 
 LIB_TARGET = "libtglang"
 TESTER_TARGET = "tglang-tester"
@@ -162,21 +166,29 @@ def copy_binaries(_target, context):
     multitester = os.path.join(context["build_dir"], MULTITESTER_TARGET, MULTITESTER_BINARY_NAME)
     lib = os.path.join(context["build_dir"], LIB_TARGET, LIB_BINARY_NAME)
     runner = os.path.join(DEFAULT_SOURCE_PATH, "scripts", RUNNER_BINARY_NAME)
-    targets = [tester, multitester, lib, runner]
+    bin_targets = [tester, multitester, lib, runner]
+    
+    fasttext_model = os.path.join(context["source_dir"], "src", RESOURCES_DIR, FASTTEXT_MODEL_FNAME)
+    resource_targets = [fasttext_model]
 
-    for f in targets:
+    for f in bin_targets + resource_targets:
         if not os.path.exists(f):
             raise RuntimeError(f"No binary file: `{f}`")
     
-    dst = context["bin_dir"]
+    bin_dir = context["bin_dir"]
     try:
-        shutil.rmtree(dst)
+        shutil.rmtree(bin_dir)
     except FileNotFoundError:
         pass
-    os.makedirs(dst)
+    os.makedirs(bin_dir)
 
-    for f in targets:
-        shutil.copy(f, os.path.join(dst, os.path.basename(f)))
+    for f in bin_targets:
+        shutil.copy(f, os.path.join(bin_dir, os.path.basename(f)))
+    
+    resources_dir = os.path.join(bin_dir, RESOURCES_DIR)
+    os.makedirs(resources_dir)
+    for f in resource_targets:
+        shutil.copy(f, os.path.join(resources_dir, os.path.basename(f)))
 
 
 DEPENDENCIES = {
