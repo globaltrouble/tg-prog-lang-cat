@@ -1,21 +1,19 @@
 #include "tglang.h"
 
-#include <cstdlib>
-#include <cstring>
+#include "fastText/src/fasttext.h"
+
 #include <atomic>
+#include <string>
 #include <vector>
 #include <iostream>
-#include <fstream>
-#include <cassert>
-#include <memory>
-#include <chrono>
-#include <optional>
-#include <algorithm>
 #include <sstream>
+#include <chrono>
 #include <iomanip>
+#include <cstdlib>
 
 namespace {
 
+// TODO: remove profiler
 struct ProfileIt {
   char const * const m_name = nullptr;
   std::chrono::steady_clock::time_point m_begin;
@@ -28,7 +26,10 @@ struct ProfileIt {
   }
 };
 
-std::atomic<bool> wasInit = { false };
+} // namespace
+
+static std::atomic<bool> wasInit = { false };
+static fasttext::FastText model;
  
 void init() {
   ProfileIt p("Init");
@@ -43,26 +44,39 @@ void init() {
   }
 
   // TODO: make threadsafe
-}
 
-} // namespace
+  model.loadModel("./resources/fasttext-model.bin");
+}
 
 enum TglangLanguage tglang_detect_programming_language(const char *text) {
   ProfileIt inf("Inference");
 
   init();
+  
+  std::stringstream ss(text);
+  ss.seekg(0, ss.beg);
 
-  if (strstr(text, "std::") != NULL) {
-    return TGLANG_LANGUAGE_CPLUSPLUS;
+  constexpr int32_t kCount = 1;
+  constexpr fasttext::real kProbThreshold = 0.4;
+
+  std::vector<std::pair<fasttext::real, std::string>> result;
+  try {
+    model.predictLine(ss, result, kCount, kProbThreshold);
+  } catch (...) {
+    return TglangLanguage::TGLANG_LANGUAGE_OTHER;
   }
-  if (strstr(text, "let ") != NULL) {
-    return TGLANG_LANGUAGE_JAVASCRIPT;
+
+  if (result.empty()) {
+    return TglangLanguage::TGLANG_LANGUAGE_OTHER;
   }
-  if (strstr(text, "int ") != NULL) {
-    return TGLANG_LANGUAGE_C;
-  }
-  if (strstr(text, ";") == NULL) {
-    return TGLANG_LANGUAGE_PYTHON;
-  }
-  return TGLANG_LANGUAGE_OTHER;
+
+  auto const & res = result.front();
+  int converted = std::atoi(res.second.c_str());
+
+  // TODO: remove logs
+  std::cerr << "Fasttext, class=" << res.second << ",converted=" << converted << ",prob=" << res.first << '\n';
+  
+  assert(converted <= TglangLanguage::TGLANG_LANGUAGE_YAML);
+
+  return static_cast<TglangLanguage>(converted);
 }
