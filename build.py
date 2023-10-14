@@ -154,7 +154,7 @@ def run_tester(_target, context):
     binary = os.path.join(context["bin_dir"], TESTER_BINARY_NAME)
     if not os.path.exists(binary):
         raise RuntimeError(f"Binary doesn't exists: `{binary}`")
-    check_call([binary, context["test_file"]], env={"LD_LIBRARY_PATH": context["bin_dir"]})
+    check_call([binary, context["test_file"]], env={"LD_LIBRARY_PATH": context["bin_dir"]}, cwd=context["bin_dir"])
 
 
 def copy_binaries(_target, context):
