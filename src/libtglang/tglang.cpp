@@ -1,4 +1,5 @@
 #include "tglang.h"
+#include "symbols_to_replace.h"
 
 #include "fastText/src/fasttext.h"
 
@@ -11,8 +12,13 @@
 #include <iomanip>
 #include <cstdlib>
 #include <cstring>
+#include <codecvt>
+#include <unordered_set>
+#include <iterator>
 
 #define LABEL_PREFIX "__label__"
+
+using UnicodeConverter = std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t>;
 
 namespace {
 
@@ -33,7 +39,10 @@ struct ProfileIt {
 
 static std::atomic<bool> wasInit = { false };
 static fasttext::FastText model;
- 
+static UnicodeConverter u_converter;
+static std::unordered_set<char32_t> to_replace;
+
+
 void init() {
   ProfileIt p("Init");
 
@@ -48,40 +57,74 @@ void init() {
 
   // TODO: make threadsafe
 
+  auto replace_begin = std::cbegin(SYMBOLS_TO_REPLACE);
+  auto replace_end = std::cend(SYMBOLS_TO_REPLACE);
+
+  to_replace.reserve(replace_end - replace_begin);
+  to_replace.insert(replace_begin, replace_end);
+
   model.loadModel("./resources/fasttext-model.bin");
 }
 
 enum TglangLanguage tglang_detect_programming_language(const char *text) {
-  ProfileIt inf("Inference");
-
   init();
-  
-  std::stringstream ss(text);
-  ss.seekg(0, ss.beg);
+
+  std::stringstream ss;
+  std::string preprocessed;
+  {
+    ProfileIt inf("Preprocessing");
+
+    std::u32string unicode = u_converter.from_bytes(text, text + std::strlen(text));
+
+    std::u32string replaced;
+    replaced.reserve(unicode.size() * 2 + 1);
+    for (size_t i = 0; i < unicode.size(); i++) {
+      auto c = unicode[i];
+      if (c == U'\n' && i > 0 && unicode[i-1] != U'\n') {
+        replaced.append(U"!$");
+      } else if (to_replace.find(c) == to_replace.end()) {
+        replaced.push_back(c);
+      }
+    }
+
+    preprocessed = u_converter.to_bytes(replaced.data(), replaced.data() + replaced.size());
+
+    // std::cerr << "Processing << `" << preprocessed << "`\n";
+
+    ss << preprocessed.c_str();
+
+    ss.seekg(0, ss.beg);
+  }
 
   constexpr int32_t kCount = 1;
   constexpr fasttext::real kProbThreshold = 0.4;
 
+  int converted;
   std::vector<std::pair<fasttext::real, std::string>> result;
-  try {
-    model.predictLine(ss, result, kCount, kProbThreshold);
-  } catch (...) {
-    return TglangLanguage::TGLANG_LANGUAGE_OTHER;
+  {
+    ProfileIt inf("Inference");
+    try {
+      model.predictLine(ss, result, kCount, kProbThreshold);
+    } catch (...) {
+      std::cerr << "EXCEPTION durint predict" << std::endl;
+      return TglangLanguage::TGLANG_LANGUAGE_OTHER;
+    }
+
+    if (result.empty()) {
+      std::cerr << "No results!" << std::endl;
+      return TglangLanguage::TGLANG_LANGUAGE_OTHER;
+    }
+
+    auto const & res = result.front();
+
+    // TODO: remove LABEL_PREFIX
+    converted = std::atoi(res.second.c_str() + std::strlen(LABEL_PREFIX));
+
+    // TODO: remove logs
+    std::cerr << "Fasttext, class=" << res.second << ",converted=" << converted << ",prob=" << res.first << '\n';
+    
+    assert(converted <= TglangLanguage::TGLANG_LANGUAGE_YAML);
   }
-
-  if (result.empty()) {
-    return TglangLanguage::TGLANG_LANGUAGE_OTHER;
-  }
-
-  auto const & res = result.front();
-
-  // TODO: remove LABEL_PREFIX
-  int converted = std::atoi(res.second.c_str() + std::strlen(LABEL_PREFIX));
-
-  // TODO: remove logs
-  std::cerr << "Fasttext, class=" << res.second << ",converted=" << converted << ",prob=" << res.first << '\n';
-  
-  assert(converted <= TglangLanguage::TGLANG_LANGUAGE_YAML);
 
   return static_cast<TglangLanguage>(converted);
 }
