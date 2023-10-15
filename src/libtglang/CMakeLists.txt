@@ -9,7 +9,7 @@ add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/fastText")
 
 add_custom_target(
     generate_model_blob_header
-    COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_CURRENT_SOURCE_DIR}/create-header-from-blob.py" -f ../resources/fasttext-model.bin --header fasttext_model_blob
+    COMMAND python3 "${CMAKE_CURRENT_SOURCE_DIR}/create-header-from-blob.py" -f ../resources/fasttext-model.bin --header fasttext_model_blob
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
