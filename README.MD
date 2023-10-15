@@ -93,15 +93,16 @@ docker run -v .:/app -it tglang-builder --clean --target create-submission
 	# navigate to directory with artifacts
 	cd /app/bin && ls -lah .
 
-	# validate archive content
-	unzip submission.zip -d submission && cd submission && ls -lah .
-
 	# check archive library deps (run inside submission root dir with libtglang.so artifact)
 	ldd libtglang.so
 
+	# validate archive content,
+	# need to install unzip before
+	unzip submission.zip -d submission && cd submission && ls -lah .
+
 	# test src can be build. 
 	# reproduce steps from contest description https://contest.com/docs/ML-Competition-2023#development-and-testing
-    # need to install g++ cmake unzip
+	# need to install g++ cmake python3
 	cd src && mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build . -j 16
 
 
