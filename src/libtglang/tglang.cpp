@@ -72,7 +72,7 @@ enum TglangLanguage tglang_detect_programming_language(const char *text) {
   std::stringstream ss;
   std::string preprocessed;
   {
-    ProfileIt inf("Preprocessing");
+    ProfileIt prep("Preprocessing");
 
     std::u32string unicode = u_converter.from_bytes(text, text + std::strlen(text));
 
@@ -97,7 +97,7 @@ enum TglangLanguage tglang_detect_programming_language(const char *text) {
   }
 
   constexpr int32_t kCount = 1;
-  constexpr fasttext::real kProbThreshold = 0.4;
+  constexpr fasttext::real kProbThreshold = 0.3;
 
   int converted;
   std::vector<std::pair<fasttext::real, std::string>> result;
