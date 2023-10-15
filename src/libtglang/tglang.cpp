@@ -1,5 +1,6 @@
 #include "tglang.h"
 #include "symbols_to_replace.h"
+#include "fasttext_model_blob.h"
 
 #include "fastText/src/fasttext.h"
 
@@ -20,7 +21,18 @@
 
 using UnicodeConverter = std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t>;
 
-// TODO: remove profiler
+class FastText : public fasttext::FastText {
+public:
+  void loadModel(std::istream& in) {
+    if (!fasttext::FastText::checkModel(in)) {
+      throw std::invalid_argument("Stream has wrong format!");
+    }
+    fasttext::FastText::loadModel(in);
+  }
+
+};
+
+
 struct ProfileIt {
 #ifdef NDEBUG
   ProfileIt(char const * const) {};
@@ -39,19 +51,21 @@ struct ProfileIt {
 
 struct LibResources {
   std::unordered_set<char32_t> to_replace;
-  fasttext::FastText model;
+  FastText model;
   UnicodeConverter u_converter;
 
   LibResources() {
     ProfileIt p("Init");
-
     auto replace_begin = std::cbegin(SYMBOLS_TO_REPLACE);
     auto replace_end = std::cend(SYMBOLS_TO_REPLACE);
 
     to_replace.reserve(replace_end - replace_begin);
     to_replace.insert(replace_begin, replace_end);
 
-    model.loadModel("./resources/fasttext-model.bin");
+    size_t const blob_size = std::end(fasttext_model_blob) - std::begin(fasttext_model_blob);
+    std::string const model_str(fasttext_model_blob, blob_size);
+    std::istringstream model_blob(model_str, std::istringstream::in | std::istringstream::binary);
+    model.loadModel(model_blob);
   }
 };
 

@@ -208,7 +208,7 @@ def create_submission(_target, context):
     submission_fpath = os.path.join(context["bin_dir"], "submission.zip")
     libsrc_dir = os.path.join(context["source_dir"], "src", LIB_TARGET)
     pattern = os.path.join(libsrc_dir, "**")
-    to_ignore = [os.path.join(libsrc_dir, v) for v in ("build", )]
+    to_ignore = [os.path.join(libsrc_dir, v) for v in ("build", "fasttext_model_blob.h")]
     
     to_archive = [
         (os.path.join(context["bin_dir"], LIB_BINARY_NAME), LIB_BINARY_NAME),   
