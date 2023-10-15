@@ -1,3 +1,0 @@
-[submodule "src/libtglang/fastText"]
-	path = src/libtglang/fastText
-	url = git@github.com:facebookresearch/fastText.git
