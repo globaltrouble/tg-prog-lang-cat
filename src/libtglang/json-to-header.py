@@ -20,8 +20,8 @@ for ind, (k, v) in enumerate(json.loads(data).items()):
     if ind > 0:
         print(",")
     print('{"%s", {%s, %s}}' % (k.replace("\\", "\\\\").replace('"', r'\"'), f, i), end="")
-    if i > 1000:
-        break       # TODO: remove!
+    # if i > 1000:
+    #     break       # TODO: remove!
 print("""
 };
 #endif // itfidf_mapping_H

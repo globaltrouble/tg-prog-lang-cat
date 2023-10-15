@@ -58,6 +58,8 @@ struct LibResources {
   Ort::SessionOptions session_options;
   std::optional<Ort::Session> session;
 
+  std::unordered_map<std::string, int> classes_mapping;
+
   LibResources() {
     ProfileIt p("Init");
     
@@ -90,6 +92,109 @@ struct LibResources {
 
     std::transform(std::begin(output_names), std::end(output_names), std::begin(output_names_char),
                   [&](const std::string& str) { return str.c_str(); });
+  
+    classes_mapping = {
+        {"TGLANG_LANGUAGE_OTHER", 0},
+        {"TGLANG_LANGUAGE_1S_ENTERPRISE", 1},
+        {"TGLANG_LANGUAGE_ABAP", 2},
+        {"TGLANG_LANGUAGE_ACTIONSCRIPT", 3},
+        {"TGLANG_LANGUAGE_ADA", 4},
+        {"TGLANG_LANGUAGE_APACHE_GROOVY", 5},
+        {"TGLANG_LANGUAGE_APEX", 6},
+        {"TGLANG_LANGUAGE_APPLESCRIPT", 7},
+        {"TGLANG_LANGUAGE_ASP", 8},
+        {"TGLANG_LANGUAGE_ASSEMBLY", 9},
+        {"TGLANG_LANGUAGE_AUTOHOTKEY", 10},
+        {"TGLANG_LANGUAGE_AWK", 11},
+        {"TGLANG_LANGUAGE_BASIC", 12},
+        {"TGLANG_LANGUAGE_BATCH", 13},
+        {"TGLANG_LANGUAGE_BISON", 14},
+        {"TGLANG_LANGUAGE_C", 15},
+        {"TGLANG_LANGUAGE_CLOJURE", 16},
+        {"TGLANG_LANGUAGE_CMAKE", 17},
+        {"TGLANG_LANGUAGE_COBOL", 18},
+        {"TGLANG_LANGUAGE_COFFESCRIPT", 19},
+        {"TGLANG_LANGUAGE_COMMON_LISP", 20},
+        {"TGLANG_LANGUAGE_CPLUSPLUS", 21},
+        {"TGLANG_LANGUAGE_CRYSTAL", 22},
+        {"TGLANG_LANGUAGE_CSHARP", 23},
+        {"TGLANG_LANGUAGE_CSS", 24},
+        {"TGLANG_LANGUAGE_CSV", 25},
+        {"TGLANG_LANGUAGE_D", 26},
+        {"TGLANG_LANGUAGE_DART", 27},
+        {"TGLANG_LANGUAGE_DELPHI", 28},
+        {"TGLANG_LANGUAGE_DOCKER", 29},
+        {"TGLANG_LANGUAGE_ELIXIR", 30},
+        {"TGLANG_LANGUAGE_ELM", 31},
+        {"TGLANG_LANGUAGE_ERLANG", 32},
+        {"TGLANG_LANGUAGE_FIFT", 33},
+        {"TGLANG_LANGUAGE_FORTH", 34},
+        {"TGLANG_LANGUAGE_FORTRAN", 35},
+        {"TGLANG_LANGUAGE_FSHARP", 36},
+        {"TGLANG_LANGUAGE_FUNC", 37},
+        {"TGLANG_LANGUAGE_GAMS", 38},
+        {"TGLANG_LANGUAGE_GO", 39},
+        {"TGLANG_LANGUAGE_GRADLE", 40},
+        {"TGLANG_LANGUAGE_GRAPHQL", 41},
+        {"TGLANG_LANGUAGE_HACK", 42},
+        {"TGLANG_LANGUAGE_HASKELL", 43},
+        {"TGLANG_LANGUAGE_HTML", 44},
+        {"TGLANG_LANGUAGE_ICON", 45},
+        {"TGLANG_LANGUAGE_IDL", 46},
+        {"TGLANG_LANGUAGE_INI", 47},
+        {"TGLANG_LANGUAGE_JAVA", 48},
+        {"TGLANG_LANGUAGE_JAVASCRIPT", 49},
+        {"TGLANG_LANGUAGE_JSON", 50},
+        {"TGLANG_LANGUAGE_JULIA", 51},
+        {"TGLANG_LANGUAGE_KEYMAN", 52},
+        {"TGLANG_LANGUAGE_KOTLIN", 53},
+        {"TGLANG_LANGUAGE_LATEX", 54},
+        {"TGLANG_LANGUAGE_LISP", 55},
+        {"TGLANG_LANGUAGE_LOGO", 56},
+        {"TGLANG_LANGUAGE_LUA", 57},
+        {"TGLANG_LANGUAGE_MAKEFILE", 58},
+        {"TGLANG_LANGUAGE_MARKDOWN", 59},
+        {"TGLANG_LANGUAGE_MATLAB", 60},
+        {"TGLANG_LANGUAGE_NGINX", 61},
+        {"TGLANG_LANGUAGE_NIM", 62},
+        {"TGLANG_LANGUAGE_OBJECTIVE_C", 63},
+        {"TGLANG_LANGUAGE_OCAML", 64},
+        {"TGLANG_LANGUAGE_OPENEDGE_ABL", 65},
+        {"TGLANG_LANGUAGE_PASCAL", 66},
+        {"TGLANG_LANGUAGE_PERL", 67},
+        {"TGLANG_LANGUAGE_PHP", 68},
+        {"TGLANG_LANGUAGE_PL_SQL", 69},
+        {"TGLANG_LANGUAGE_POWERSHELL", 70},
+        {"TGLANG_LANGUAGE_PROLOG", 71},
+        {"TGLANG_LANGUAGE_PROTOBUF", 72},
+        {"TGLANG_LANGUAGE_PYTHON", 73},
+        {"TGLANG_LANGUAGE_QML", 74},
+        {"TGLANG_LANGUAGE_R", 75},
+        {"TGLANG_LANGUAGE_RAKU", 76},
+        {"TGLANG_LANGUAGE_REGEX", 77},
+        {"TGLANG_LANGUAGE_RUBY", 78},
+        {"TGLANG_LANGUAGE_RUST", 79},
+        {"TGLANG_LANGUAGE_SAS", 80},
+        {"TGLANG_LANGUAGE_SCALA", 81},
+        {"TGLANG_LANGUAGE_SCHEME", 82},
+        {"TGLANG_LANGUAGE_SHELL", 83},
+        {"TGLANG_LANGUAGE_SMALLTALK", 84},
+        {"TGLANG_LANGUAGE_SOLIDITY", 85},
+        {"TGLANG_LANGUAGE_SQL", 86},
+        {"TGLANG_LANGUAGE_SWIFT", 87},
+        {"TGLANG_LANGUAGE_TCL", 88},
+        {"TGLANG_LANGUAGE_TEXTILE", 89},
+        {"TGLANG_LANGUAGE_TL", 90},
+        {"TGLANG_LANGUAGE_TYPESCRIPT", 91},
+        {"TGLANG_LANGUAGE_UNREALSCRIPT", 92},
+        {"TGLANG_LANGUAGE_VALA", 93},
+        {"TGLANG_LANGUAGE_VBSCRIPT", 94},
+        {"TGLANG_LANGUAGE_VERILOG", 95},
+        {"TGLANG_LANGUAGE_VISUAL_BASIC", 96},
+        {"TGLANG_LANGUAGE_WOLFRAM", 97},
+        {"TGLANG_LANGUAGE_XML", 98},
+        {"TGLANG_LANGUAGE_YAML", 99}
+    };
   }
 };
 
@@ -181,17 +286,19 @@ enum TglangLanguage tglang_detect_programming_language(const char *text) {
     assert(output_tensors.size() == lib_sources.output_names.size() && output_tensors[0].IsTensor());
     // assert(output_tensors.size() == 2);
     auto & out1 = output_tensors[0];
-    out1.
     // auto & out2 = output_tensors[1];
     // std::cerr << "Out1 has value: " << out1.HasValue() << std::endl;
     // std::cerr << "Out2 has value: " << out2.HasValue() << std::endl;
-    // auto out1_shape_info = out1.GetTensorTypeAndShapeInfo();
-    // auto out1_shape = out1_shape_info.GetShape();
-    // size_t tag_len = out1.GetStringTensorElementLength(0);
+    auto out1_shape_info = out1.GetTensorTypeAndShapeInfo();
+    auto out1_shape = out1_shape_info.GetShape();
+    size_t tag_len = out1.GetStringTensorElementLength(0);
     // std::cerr << "Out1 shape: " << print_shape(out1_shape) << ", elem length:" << tag_len << std::endl;
-    // std::string result(tag_len, '\0');
-    // out1.GetStringTensorElement(result.size(), 0, result.data());
-    // std::cerr << "Out1 value: `" << result << "`" << std::endl;
+    std::string result(tag_len, '\0');
+    out1.GetStringTensorElement(result.size(), 0, result.data());
+
+    auto it = lib_sources.classes_mapping.find(result);
+    return it == lib_sources.classes_mapping.end() ? TGLANG_LANGUAGE_OTHER : static_cast<TglangLanguage>(it->second);
+
   } catch (std::exception const & exception) {
 #ifndef NDEBUG
       std::cerr << "ERROR running model inference: " << exception.what() << std::endl;
