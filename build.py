@@ -255,9 +255,6 @@ def create_submission(_target, context):
                 dst.write(src.read())
                 
         
-        
-        
-
 DEPENDENCIES = {
     TESTER_TARGET: [LINK_TESTER_TARGET],
     MULTITESTER_TARGET: [LINK_MULTITESTER_TARGET],
