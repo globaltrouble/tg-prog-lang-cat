@@ -3,6 +3,7 @@
 
 #include "onnxruntime_cxx_api.h"
 
+#include <re2/re2.h>
 
 #include <cstdlib>
 #include <cstring>
@@ -11,6 +12,7 @@
 #include <iostream>
 #include <fstream>
 #include <cassert>
+#include <cstring>
 #include <memory>
 #include <chrono>
 #include <optional>
@@ -37,6 +39,11 @@ struct ProfileIt {
 struct LibResources {
   const char* SPECIAL_SYMBOLS_REGEX = R"([.,;:\\\/{}\[\]\|!\"#\$%&\'\(\)\*\+\-\<\=\>\?@\^\`\~)])";
   const char* SPECIAL_SYMBOLS_REGEX_2 = R"(\b\w+\b|[.,;:\\\/{}\[\]\|!\"#\$%&\'\(\)\*\+\-\<\=\>\?@\^\`\~)])";
+
+  RE2 to_find = SPECIAL_SYMBOLS_REGEX_2;
+  RE2 spaces = SPECIAL_SYMBOLS_REGEX;
+  RE2 newline = "\n";
+  RE2 tab = "\t";
   
   std::vector<std::string> input_names;
   std::vector<std::string> output_names;
@@ -105,11 +112,53 @@ std::string print_shape(const std::vector<std::int64_t>& v) {
   return ss.str();
 }
 
+void add_spaces(std::string & s) {
+  RE2::GlobalReplace(&s, lib_sources.spaces, " \1 ");
+}
+
+std::vector<std::string> tokenize(std::string & s) {
+  std::transform(s.begin(), s.end(), s.begin(),
+    [](unsigned char c){ return std::tolower(c); });
+
+    std::vector<std::string> result;
+
+    re2::StringPiece input(s);
+    std::string match;
+    while (RE2::FindAndConsume(&input, lib_sources.to_find, &match)) {
+        result.push_back(match);
+    }
+
+    return result;
+}
+
+// void add_special_symbols(std::string & s) {
+//   RE2::GlobalReplace(&s, lib_sources.newline, " __newline__ ");
+//   RE2::GlobalReplace(&s, lib_sources.tab, " __tab__ ");
+// }
+
+std::vector<float> generate_vector(std::vector<std::string> const & words) {
+  std::vector<float> result(lib_sources.tfidf_mapping.size(), 0.0);
+  for (auto const & word : words) {
+    auto it = lib_sources.tfidf_mapping.find(word);
+    if (it == lib_sources.tfidf_mapping.end()) {
+      continue;
+    }
+
+    float tf_idf_val = it->second.first;
+    int64_t idx = it->second.second;
+    result[idx] += tf_idf_val;
+  }
+
+  return result;
+}
+
 enum TglangLanguage tglang_detect_programming_language(const char *text) {
+  std::string s(text);
+  add_spaces(s);
+  // add_special_symbols(s);
+  std::vector<std::string> input_string_list = tokenize(s);
 
-  (void)text;
-
-  std::vector<float> input_tensor_values;
+  std::vector<float> input_tensor_values = generate_vector(input_string_list);
   // print name/shape of inputs
   // generate random numbers in the range [0, 255]
   // std::vector<float> input_tensor_values(total_number_elements);
@@ -130,18 +179,19 @@ enum TglangLanguage tglang_detect_programming_language(const char *text) {
     // double-check the dimensions of the output tensors
     // NOTE: the number of output tensors is equal to the number of output nodes specifed in the Run() call
     assert(output_tensors.size() == lib_sources.output_names.size() && output_tensors[0].IsTensor());
-    assert(output_tensors.size() == 2);
+    // assert(output_tensors.size() == 2);
     auto & out1 = output_tensors[0];
-    auto & out2 = output_tensors[1];
-    std::cerr << "Out1 has value: " << out1.HasValue() << std::endl;
-    std::cerr << "Out2 has value: " << out2.HasValue() << std::endl;
-    auto out1_shape_info = out1.GetTensorTypeAndShapeInfo();
-    auto out1_shape = out1_shape_info.GetShape();
-    size_t tag_len = out1.GetStringTensorElementLength(0);
-    std::cerr << "Out1 shape: " << print_shape(out1_shape) << ", elem length:" << tag_len << std::endl;
-    std::string result(tag_len, '\0');
-    out1.GetStringTensorElement(result.size(), 0, result.data());
-    std::cerr << "Out1 value: `" << result << "`" << std::endl;
+    out1.
+    // auto & out2 = output_tensors[1];
+    // std::cerr << "Out1 has value: " << out1.HasValue() << std::endl;
+    // std::cerr << "Out2 has value: " << out2.HasValue() << std::endl;
+    // auto out1_shape_info = out1.GetTensorTypeAndShapeInfo();
+    // auto out1_shape = out1_shape_info.GetShape();
+    // size_t tag_len = out1.GetStringTensorElementLength(0);
+    // std::cerr << "Out1 shape: " << print_shape(out1_shape) << ", elem length:" << tag_len << std::endl;
+    // std::string result(tag_len, '\0');
+    // out1.GetStringTensorElement(result.size(), 0, result.data());
+    // std::cerr << "Out1 value: `" << result << "`" << std::endl;
   } catch (std::exception const & exception) {
 #ifndef NDEBUG
       std::cerr << "ERROR running model inference: " << exception.what() << std::endl;
