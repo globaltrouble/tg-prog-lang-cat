@@ -75,3 +75,39 @@ To run shell in docker container instead of build script:
 ```
 docker run --entrypoint bash -v .:/app -it tglang-builder
 ```
+
+### Prepare submission
+
+```
+# create sbmission
+docker run -v .:/app -it tglang-builder --clean --target create-submission
+```
+
+### Validate submission
+- run empty debian docker container:
+	```
+	docker run -v ./build-docker/bin:/app/bin -v ./examples:/app/examples -it debian:10 bash
+	```
+- execute next command in empty debian docker container:
+	```
+	# navigate to directory with artifacts
+	cd /app/bin && ls -lah .
+
+	# check archive library deps (run inside submission root dir with libtglang.so artifact)
+	ldd libtglang.so
+
+	# validate archive content,
+	# need to install unzip before
+	unzip submission.zip -d submission && cd submission && ls -lah .
+
+	# test src can be build. 
+	# reproduce steps from contest description https://contest.com/docs/ML-Competition-2023#development-and-testing
+	# need to install g++ cmake python3
+	cd src && mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build . -j 16
+
+
+	# check build library deps (run inside build dir)
+	ldd libtglang.so
+
+	# TODO: check library can be loaded & executed
+	```
