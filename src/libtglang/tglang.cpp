@@ -20,8 +20,6 @@
 
 using UnicodeConverter = std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t>;
 
-namespace {
-
 // TODO: remove profiler
 struct ProfileIt {
   char const * const m_name = nullptr;
@@ -35,46 +33,33 @@ struct ProfileIt {
   }
 };
 
-} // namespace
+struct LibResources {
+  std::unordered_set<char32_t> to_replace;
+  fasttext::FastText model;
+  UnicodeConverter u_converter;
 
-static std::atomic<bool> wasInit = { false };
-static fasttext::FastText model;
-static UnicodeConverter u_converter;
-static std::unordered_set<char32_t> to_replace;
+  LibResources() {
+    ProfileIt p("Init");
 
+    auto replace_begin = std::cbegin(SYMBOLS_TO_REPLACE);
+    auto replace_end = std::cend(SYMBOLS_TO_REPLACE);
 
-void init() {
-  ProfileIt p("Init");
+    to_replace.reserve(replace_end - replace_begin);
+    to_replace.insert(replace_begin, replace_end);
 
-  bool expected = false;
-  bool alreadyInit = !wasInit.compare_exchange_strong(expected, 
-                                                      true,
-                                                      std::memory_order_release,
-                                                      std::memory_order_relaxed);
-  if (alreadyInit) {
-    return;
+    model.loadModel("./resources/fasttext-model.bin");
   }
+};
 
-  // TODO: make threadsafe
-
-  auto replace_begin = std::cbegin(SYMBOLS_TO_REPLACE);
-  auto replace_end = std::cend(SYMBOLS_TO_REPLACE);
-
-  to_replace.reserve(replace_end - replace_begin);
-  to_replace.insert(replace_begin, replace_end);
-
-  model.loadModel("./resources/fasttext-model.bin");
-}
+LibResources lib_sources;
 
 enum TglangLanguage tglang_detect_programming_language(const char *text) {
-  init();
-
   std::stringstream ss;
   std::string preprocessed;
   {
     ProfileIt prep("Preprocessing");
 
-    std::u32string unicode = u_converter.from_bytes(text, text + std::strlen(text));
+    std::u32string unicode = lib_sources.u_converter.from_bytes(text, text + std::strlen(text));
 
     std::u32string replaced;
     replaced.reserve(unicode.size() * 2 + 1);
@@ -82,12 +67,12 @@ enum TglangLanguage tglang_detect_programming_language(const char *text) {
       auto c = unicode[i];
       if (c == U'\n' && i > 0 && unicode[i-1] != U'\n') {
         replaced.append(U"!$");
-      } else if (to_replace.find(c) == to_replace.end()) {
+      } else if (lib_sources.to_replace.find(c) == lib_sources.to_replace.end()) {
         replaced.push_back(c);
       }
     }
 
-    preprocessed = u_converter.to_bytes(replaced.data(), replaced.data() + replaced.size());
+    preprocessed = lib_sources.u_converter.to_bytes(replaced.data(), replaced.data() + replaced.size());
 
     // std::cerr << "Processing << `" << preprocessed << "`\n";
 
@@ -104,14 +89,14 @@ enum TglangLanguage tglang_detect_programming_language(const char *text) {
   {
     ProfileIt inf("Inference");
     try {
-      model.predictLine(ss, result, kCount, kProbThreshold);
+      lib_sources.model.predictLine(ss, result, kCount, kProbThreshold);
     } catch (...) {
-      std::cerr << "EXCEPTION durint predict" << std::endl;
+      std::cerr << "EXCEPTION durint predict" << "\n";
       return TglangLanguage::TGLANG_LANGUAGE_OTHER;
     }
 
     if (result.empty()) {
-      std::cerr << "No results!" << std::endl;
+      std::cerr << "No results!" << "\n";
       return TglangLanguage::TGLANG_LANGUAGE_OTHER;
     }
 
