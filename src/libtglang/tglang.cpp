@@ -16,9 +16,10 @@
 #include <sstream>
 #include <iomanip>
 
-namespace {
-
 struct ProfileIt {
+#ifdef NDEBUG
+  ProfileIt(char const * const) {};
+#else
   char const * const m_name = nullptr;
   std::chrono::steady_clock::time_point m_begin;
   
@@ -26,9 +27,11 @@ struct ProfileIt {
 
   ~ProfileIt() {
     auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - m_begin);
-    std::cerr << std::fixed << std::setprecision(6) << (elapsed.count() * 0.000001) << " sec \n";
+    std::cerr << m_name << ": " << std::fixed << std::setprecision(6) << (elapsed.count() * 0.000001) << " sec \n";
   }
+#endif
 };
+
 
 std::atomic<bool> wasInit = { false };
 std::vector<std::vector<float>> inputs;
@@ -168,8 +171,6 @@ void predict(std::vector<float> & input_tensor_values) {
       std::cout << "ERROR running model inference: " << exception.what() << std::endl;
     exit(-1);
   }
-}
-
 }
 
 enum TglangLanguage tglang_detect_programming_language(const char *text) {
