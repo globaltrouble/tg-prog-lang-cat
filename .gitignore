@@ -6,3 +6,4 @@ temp
 .vscode
 .ipynb_checkpoints
 fasttext_model_blob.h
+tfidf_mapping.h

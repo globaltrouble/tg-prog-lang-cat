@@ -1,6 +1,8 @@
 #include "tglang.h"
+#include "tfidf_mapping.h"
 
 #include "onnxruntime_cxx_api.h"
+
 
 #include <cstdlib>
 #include <cstring>
@@ -33,21 +35,28 @@ struct ProfileIt {
 };
 
 struct LibResources {
+  const char* SPECIAL_SYMBOLS_REGEX = R"([.,;:\\\/{}\[\]\|!\"#\$%&\'\(\)\*\+\-\<\=\>\?@\^\`\~)])";
+  const char* SPECIAL_SYMBOLS_REGEX_2 = R"(\b\w+\b|[.,;:\\\/{}\[\]\|!\"#\$%&\'\(\)\*\+\-\<\=\>\?@\^\`\~)])";
+  
   std::vector<std::string> input_names;
   std::vector<std::string> output_names;
   std::vector<const char*> input_names_char;
   std::vector<const char*> output_names_char;
   std::vector<std::int64_t> input_shape;
 
-  // Ort::Env env(Ort::OrtLoggingLevel::ORT_LOGGING_LEVEL_WARNING, "example-model-explorer");
+  std::unordered_map<std::string, std::pair<float, int64_t>> tfidf_mapping;
+
   Ort::Env env;
-  // TODO: change to "./resources/svm-model.onnx"
-  const char * model_file = "/home/sun/Downloads/tg_challenge/mnb-1.onnx";
+  const char * model_file = "./resources/svm_model_best.onnx";
   Ort::SessionOptions session_options;
   std::optional<Ort::Session> session;
 
   LibResources() {
     ProfileIt p("Init");
+    
+    tfidf_mapping.reserve(std::end(raw_itfidf_mapping) - std::begin(raw_itfidf_mapping));
+    tfidf_mapping.insert(std::begin(raw_itfidf_mapping), std::end(raw_itfidf_mapping));
+
     session = {Ort::Session(env, model_file, session_options)};
     // size_t const inputs_count = session->GetInputCount();
     // assert(inputs_count == 1);
@@ -78,7 +87,6 @@ struct LibResources {
 };
 
 LibResources lib_sources;
- 
 
 template <typename T>
 Ort::Value vec_to_tensor(std::vector<T> & data, std::vector<std::int64_t> const & shape) {
@@ -97,7 +105,11 @@ std::string print_shape(const std::vector<std::int64_t>& v) {
   return ss.str();
 }
 
-void predict(std::vector<float> & input_tensor_values) {
+enum TglangLanguage tglang_detect_programming_language(const char *text) {
+
+  (void)text;
+
+  std::vector<float> input_tensor_values;
   // print name/shape of inputs
   // generate random numbers in the range [0, 255]
   // std::vector<float> input_tensor_values(total_number_elements);
@@ -130,27 +142,12 @@ void predict(std::vector<float> & input_tensor_values) {
     std::string result(tag_len, '\0');
     out1.GetStringTensorElement(result.size(), 0, result.data());
     std::cerr << "Out1 value: `" << result << "`" << std::endl;
-  } catch (const Ort::Exception& exception) {
+  } catch (std::exception const & exception) {
+#ifndef NDEBUG
       std::cerr << "ERROR running model inference: " << exception.what() << std::endl;
-    exit(-1);
+#endif
+    return TGLANG_LANGUAGE_OTHER;
   }
-}
 
-enum TglangLanguage tglang_detect_programming_language(const char *text) {
-  std::vector<std::vector<float>> inputs;
-  predict(inputs[0]);
-  
-  if (strstr(text, "std::") != NULL) {
-    return TGLANG_LANGUAGE_CPLUSPLUS;
-  }
-  if (strstr(text, "let ") != NULL) {
-    return TGLANG_LANGUAGE_JAVASCRIPT;
-  }
-  if (strstr(text, "int ") != NULL) {
-    return TGLANG_LANGUAGE_C;
-  }
-  if (strstr(text, ";") == NULL) {
-    return TGLANG_LANGUAGE_PYTHON;
-  }
   return TGLANG_LANGUAGE_OTHER;
 }

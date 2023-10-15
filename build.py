@@ -21,6 +21,7 @@ MULTITESTER_BINARY_NAME = "tglang-multitester"
 RUNNER_BINARY_NAME = "run-tglang.py"
 
 ONNXRT_LIB_FNAME = "libonnxruntime.so.1.16.0"
+ONNX_MODEL_FNAME = "svm_model_best.onnx"
 DEP_PACKAGES_FNAME = "deb-packages.txt"
 
 BINARY_DIR = "bin"
@@ -182,7 +183,8 @@ def copy_binaries(_target, context):
     bin_targets = [tester, multitester, lib, runner]
     
     onnxrt_file = os.path.join(context["source_dir"], "src", LIB_TARGET, "ort", "lib", ONNXRT_LIB_FNAME)
-    resource_targets = [onnxrt_file]
+    onnx_model = os.path.join(context["source_dir"], "src", RESOURCES_DIR, ONNX_MODEL_FNAME)
+    resource_targets = [onnxrt_file, onnx_model]
 
     for f in bin_targets + resource_targets:
         if not os.path.exists(f):
