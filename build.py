@@ -20,7 +20,7 @@ TESTER_BINARY_NAME = "tglang-tester"
 MULTITESTER_BINARY_NAME = "tglang-multitester"
 RUNNER_BINARY_NAME = "run-tglang.py"
 
-FASTTEXT_MODEL_FNAME = "fasttext-model.bin"
+ONNXRT_LIB_FNAME = "libonnxruntime.so.1.16.0"
 DEP_PACKAGES_FNAME = "deb-packages.txt"
 
 BINARY_DIR = "bin"
@@ -181,8 +181,8 @@ def copy_binaries(_target, context):
     runner = os.path.join(DEFAULT_SOURCE_PATH, "scripts", RUNNER_BINARY_NAME)
     bin_targets = [tester, multitester, lib, runner]
     
-    fasttext_model = os.path.join(context["source_dir"], "src", RESOURCES_DIR, FASTTEXT_MODEL_FNAME)
-    resource_targets = [fasttext_model]
+    onnxrt_file = os.path.join(context["source_dir"], "src", LIB_TARGET, "ort", "lib", ONNXRT_LIB_FNAME)
+    resource_targets = [onnxrt_file]
 
     for f in bin_targets + resource_targets:
         if not os.path.exists(f):
@@ -208,7 +208,7 @@ def create_submission(_target, context):
     submission_fpath = os.path.join(context["bin_dir"], "submission.zip")
     libsrc_dir = os.path.join(context["source_dir"], "src", LIB_TARGET)
     pattern = os.path.join(libsrc_dir, "**")
-    to_ignore = [os.path.join(libsrc_dir, v) for v in ("build", "fasttext_model_blob.h")]
+    to_ignore = [os.path.join(libsrc_dir, v) for v in ("build",)]
     
     to_archive = [
         (os.path.join(context["bin_dir"], LIB_BINARY_NAME), LIB_BINARY_NAME),   
