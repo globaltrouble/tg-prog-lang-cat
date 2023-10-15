@@ -22,6 +22,9 @@ using UnicodeConverter = std::wstring_convert<std::codecvt_utf8<char32_t>, char3
 
 // TODO: remove profiler
 struct ProfileIt {
+#ifdef NDEBUG
+  ProfileIt(char const * const) {};
+#else
   char const * const m_name = nullptr;
   std::chrono::steady_clock::time_point m_begin;
   
@@ -31,6 +34,7 @@ struct ProfileIt {
     auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - m_begin);
     std::cerr << m_name << std::fixed << std::setprecision(6) << (elapsed.count() * 0.000001) << " sec \n";
   }
+#endif
 };
 
 struct LibResources {
@@ -91,12 +95,16 @@ enum TglangLanguage tglang_detect_programming_language(const char *text) {
     try {
       lib_sources.model.predictLine(ss, result, kCount, kProbThreshold);
     } catch (...) {
-      std::cerr << "EXCEPTION durint predict" << "\n";
+#ifndef NDEBUG
+      std::cerr << "EXCEPTION during predict" << "\n";
+#endif
       return TglangLanguage::TGLANG_LANGUAGE_OTHER;
     }
 
     if (result.empty()) {
+#ifndef NDEBUG
       std::cerr << "No results!" << "\n";
+#endif
       return TglangLanguage::TGLANG_LANGUAGE_OTHER;
     }
 
@@ -105,9 +113,10 @@ enum TglangLanguage tglang_detect_programming_language(const char *text) {
     // TODO: remove LABEL_PREFIX
     converted = std::atoi(res.second.c_str() + std::strlen(LABEL_PREFIX));
 
-    // TODO: remove logs
+#ifndef NDEBUG
     std::cerr << "Fasttext, class=" << res.second << ",converted=" << converted << ",prob=" << res.first << '\n';
-    
+#endif
+
     assert(converted <= TglangLanguage::TGLANG_LANGUAGE_YAML);
   }
 
