@@ -1,6 +1,5 @@
 #include "tglang.h"
 #include "symbols_to_replace.h"
-#include "fasttext_model_blob.h"
 
 #include "fastText/src/fasttext.h"
 
@@ -20,6 +19,11 @@
 #define LABEL_PREFIX "__label__"
 
 using UnicodeConverter = std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t>;
+
+// inspired by `https://tratt.net/laurie/blog/2022/whats_the_most_portable_way_to_include_binary_blobs_in_an_executable.html`
+// must be linked with `fasttext_model_blob.o`
+extern char _binary_fasttext_model_bin_start;
+extern char _binary_fasttext_model_bin_end;
 
 class FastText : public fasttext::FastText {
 public:
@@ -62,8 +66,9 @@ struct LibResources {
     to_replace.reserve(replace_end - replace_begin);
     to_replace.insert(replace_begin, replace_end);
 
-    size_t const blob_size = std::end(fasttext_model_blob) - std::begin(fasttext_model_blob);
-    std::string const model_str(fasttext_model_blob, blob_size);
+    size_t blob_size = &_binary_fasttext_model_bin_end - &_binary_fasttext_model_bin_start;
+    std::cerr << "Blob size: " << blob_size << std::endl;
+    std::string const model_str(&_binary_fasttext_model_bin_start, blob_size);
     std::istringstream model_blob(model_str, std::istringstream::in | std::istringstream::binary);
     model.loadModel(model_blob);
   }
