@@ -42,7 +42,7 @@ Modeling TODOs:
 TODOs 11.11:
 
 Dataset:
-- [ ] Prepare and send the dataset in json format (Anton M.)
+- [X] Prepare and send the dataset in json format (Anton M.)
 - [ ] Add 2 remaining classes (FunC and TL) (Can FunC be scrapped from [here](https://github.com/search?q=path%3A*.fc&type=code&p=2) or [here](https://docs.ton.org/develop/smart-contracts/examples#ton-smart-challenge-4))
 - [ ] "Label" current TG dataset (OTHER vs. CODE, label code part) with our classifier.
 - [ ] Multiple languages in OTHER (currently a lot of russian texts there), maybe augment using data from [here](https://bitbucket.org/globaltrouble/tg-cat/src/master/contest-static/dc0202-input.txt)
