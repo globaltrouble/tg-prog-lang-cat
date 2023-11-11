@@ -39,4 +39,38 @@ Modeling TODOs:
 
 
 
+TODOs 11.11:
+
+Dataset:
+- [ ] Prepare and send the dataset in json format (Anton M.)
+- [ ] Add 2 remaining classes (FunC and TL) (Can FunC be scrapped from [here](https://github.com/search?q=path%3A*.fc&type=code&p=2) or [here](https://docs.ton.org/develop/smart-contracts/examples#ton-smart-challenge-4))
+- [ ] "Label" current TG dataset (OTHER vs. CODE, label code part) with our classifier.
+- [ ] Multiple languages in OTHER (currently a lot of russian texts there), maybe augment using data from [here](https://bitbucket.org/globaltrouble/tg-cat/src/master/contest-static/dc0202-input.txt)
+- [ ] Add our dataset from BigCode The Stack (with multiple programming languages labeled)
+
+
+
+Modeling:
+- [ ] Create a Fasttext baseline model for case OTHER vs. CODE
+- [ ] Create a Fasttext baseline model for guessing the programming language
+
+
+Inference:
+
+- [ ] Update the code to load the model in compilation time
+- [ ] Update builder on repo for submission
+
+
+General Modeling Guidelines:
+- Create 2 classifiers - one for code vs. other, one for specific programming language
+- Use ML libraries for C++ which have Python bindings
+
+
+Nice-to-have things:
+- Explore other solutions for inspiration
+- Try things like "guesslang tools"
+
+
+
+
 
