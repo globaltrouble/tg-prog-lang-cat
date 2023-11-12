@@ -69,6 +69,7 @@ General Modeling Guidelines:
 Nice-to-have things:
 - Explore other solutions for inspiration
 - Try things like "guesslang tools"
+- Explore the dataset/solution from [this repo](https://github.com/IgorPereverzevDev/telegram-ml-contest)
 
 
 
