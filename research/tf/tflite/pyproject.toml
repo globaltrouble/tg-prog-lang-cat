@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "tflite"
+version = "0.1.0"
+description = ""
+authors = ["globaltrouble <www.globaltrouble@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.10"
+tflite-model-maker = "^0.4.2"
+numpy = "1.20"
+jupyterlab = "^4.0.8"
+
+[tool.poetry.dev-dependencies]
+#pytest = "^5.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
