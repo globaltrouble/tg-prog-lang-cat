@@ -1,3 +1,4 @@
 libstdc++6 
 libc6 
 libgcc1
+libre2-dev

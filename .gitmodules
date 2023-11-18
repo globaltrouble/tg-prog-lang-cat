@@ -1,3 +1,9 @@
 [submodule "src/libtglang/deps/fastText"]
 	path = src/libtglang/deps/fastText
 	url = git@github.com:facebookresearch/fastText.git
+[submodule "src/libtglang/deps/libsvm"]
+	path = src/libtglang/deps/libsvm
+	url = git@github.com:cjlin1/libsvm.git
+[submodule "src/libtglang/deps/cptrie"]
+	path = src/libtglang/deps/cptrie
+	url = git@github.com:globaltrouble/cptrie.git

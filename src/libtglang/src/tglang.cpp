@@ -1,9 +1,6 @@
 #include "tglang.h"
-#include "symbols_to_replace.h"
 
-#include "fasttext.h"
-
-#include <atomic>
+#include <re2/re2.h>
 #include <string>
 #include <vector>
 #include <iostream>
@@ -12,30 +9,20 @@
 #include <iomanip>
 #include <cstdlib>
 #include <cstring>
-#include <codecvt>
-#include <unordered_set>
 #include <iterator>
+#include <algorithm>
+#include <cassert>
 
-#define LABEL_PREFIX "__label__"
-
-using UnicodeConverter = std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t>;
+#include "cptrie.hpp"
 
 // inspired by `https://tratt.net/laurie/blog/2022/whats_the_most_portable_way_to_include_binary_blobs_in_an_executable.html`
 // must be linked with `fasttext_model_blob.o`
-extern char _binary_fasttext_model_bin_start;
-extern char _binary_fasttext_model_bin_end;
+extern char _binary_cptrie_id_dict_bin_start;
+extern char _binary_cptrie_id_dict_bin_end;
+extern char _binary_cptrie_tfidf_dict_bin_start;
+extern char _binary_cptrie_tfidf_dict_bin_end;
 
-class FastText : public fasttext::FastText {
-public:
-  void loadModel(std::istream& in) {
-    if (!fasttext::FastText::checkModel(in)) {
-      throw std::invalid_argument("Stream has wrong format!");
-    }
-    fasttext::FastText::loadModel(in);
-  }
-
-};
-
+constexpr size_t kSvmInputSize = 324632;
 
 struct ProfileIt {
 #ifdef NDEBUG
@@ -54,89 +41,84 @@ struct ProfileIt {
 };
 
 struct LibResources {
-  std::unordered_set<char32_t> to_replace;
-  FastText model;
-  UnicodeConverter u_converter;
+  re2::RE2 spaces { R"(([.,;:\\\/{}\[\]\|!\"#\$%&\'\(\)\*\+\-\<\=\>\?@\^\`\)]))" };
+  re2::RE2 to_find { R"((\b\w+\b|[.,;:\\\/{}\[\]\|!\"#\$%&\'\(\)\*\+\-\<\=\>\?@\^\`\~)]))" };
+
+  std::pair<re2::RE2, char const *> bin { R"(0[bB]([01])+)", "0b0" };
+  std::pair<re2::RE2, char const *> oct { R"(0[oO]([0-7])+)", "0o0" };
+  std::pair<re2::RE2, char const *> hex { R"(0[xX]([0-9a-fA-F])+)", "0x0" };
+  std::pair<re2::RE2, char const *> exp { R"(-?\d+[eE]-?\d+)", "0e0" };
+  std::pair<re2::RE2, char const *> floating { R"(0[bB]([01])+)", "0f0" };
+  std::pair<re2::RE2, char const *> integer { R"(-?\d+)", "0" };
+
+  std::string buffer;
+  std::string match;
+  std::vector<double> svmInput;
 
   LibResources() {
     ProfileIt p("Init");
-    auto replace_begin = std::cbegin(SYMBOLS_TO_REPLACE);
-    auto replace_end = std::cend(SYMBOLS_TO_REPLACE);
 
-    to_replace.reserve(replace_end - replace_begin);
-    to_replace.insert(replace_begin, replace_end);
+    buffer.reserve(65536);
+    match.reserve(2048);
+    svmInput.resize(kSvmInputSize);
 
-    size_t blob_size = &_binary_fasttext_model_bin_end - &_binary_fasttext_model_bin_start;
-    std::string const model_str(&_binary_fasttext_model_bin_start, blob_size);
-    std::istringstream model_blob(model_str, std::istringstream::in | std::istringstream::binary);
-    model.loadModel(model_blob);
   }
 };
 
+// init resources on library load
 LibResources lib_sources;
 
+void preprocess_text(char const * text, std::vector<double> & out) {
+  size_t const textLen = std::strlen(text);
+  
+  lib_sources.buffer.clear();
+
+  // leave only ascii
+  std::copy_if(text, text + textLen, std::back_inserter(lib_sources.buffer),  [](char c) { return !(c>=0 && c < 127);});
+
+  // add spaces
+  RE2::GlobalReplace(&lib_sources.buffer, lib_sources.spaces, " \1 ");
+
+  // change_nums_to_tokens
+  RE2::GlobalReplace(&lib_sources.buffer, lib_sources.bin.first, lib_sources.bin.second);
+  RE2::GlobalReplace(&lib_sources.buffer, lib_sources.oct.first, lib_sources.oct.second);
+  RE2::GlobalReplace(&lib_sources.buffer, lib_sources.hex.first, lib_sources.hex.second);
+  RE2::GlobalReplace(&lib_sources.buffer, lib_sources.exp.first, lib_sources.exp.second);
+  RE2::GlobalReplace(&lib_sources.buffer, lib_sources.floating.first, lib_sources.floating.second);
+  RE2::GlobalReplace(&lib_sources.buffer, lib_sources.integer.first, lib_sources.integer.second);
+
+  // tokenize & vectorize
+  re2::StringPiece input(lib_sources.buffer);
+
+  assert(out.size() == kSvmInputSize);
+  std::fill(out.begin(), out.end(), 0.0);
+
+  lib_sources.match.clear();
+
+  while (RE2::FindAndConsume(&input, lib_sources.to_find, &lib_sources.match)) {
+    auto id = cptrie::get(lib_sources.match.c_str(), &_binary_cptrie_id_dict_bin_start);    
+    auto tfidf = cptrie::get(lib_sources.match.c_str(), &_binary_cptrie_tfidf_dict_bin_start);
+    
+    assert(id.has_value() == tfidf.has_value());
+    
+    lib_sources.match.clear();
+    
+    if (!id.has_value()) {
+      continue;
+    }
+
+    double tfidf_val = *reinterpret_cast<double const *>(&tfidf.value());
+
+    out[id.value()] = tfidf_val;
+  }
+}
+
 enum TglangLanguage tglang_detect_programming_language(const char *text) {
-  std::stringstream ss;
-  std::string preprocessed;
+  
   {
     ProfileIt prep("Preprocessing");
-
-    std::u32string unicode = lib_sources.u_converter.from_bytes(text, text + std::strlen(text));
-
-    std::u32string replaced;
-    replaced.reserve(unicode.size() * 2 + 1);
-    for (size_t i = 0; i < unicode.size(); i++) {
-      auto c = unicode[i];
-      if (c == U'\n' && i > 0 && unicode[i-1] != U'\n') {
-        replaced.append(U"!$");
-      } else if (lib_sources.to_replace.find(c) == lib_sources.to_replace.end()) {
-        replaced.push_back(c);
-      }
-    }
-
-    preprocessed = lib_sources.u_converter.to_bytes(replaced.data(), replaced.data() + replaced.size());
-
-    // std::cerr << "Processing << `" << preprocessed << "`\n";
-
-    ss << preprocessed.c_str();
-
-    ss.seekg(0, ss.beg);
+    preprocess_text(text, lib_sources.svmInput);
   }
 
-  constexpr int32_t kCount = 1;
-  constexpr fasttext::real kProbThreshold = 0.3;
-
-  int converted;
-  std::vector<std::pair<fasttext::real, std::string>> result;
-  {
-    ProfileIt inf("Inference");
-    try {
-      lib_sources.model.predictLine(ss, result, kCount, kProbThreshold);
-    } catch (...) {
-#ifndef NDEBUG
-      std::cerr << "EXCEPTION during predict" << "\n";
-#endif
-      return TglangLanguage::TGLANG_LANGUAGE_OTHER;
-    }
-
-    if (result.empty()) {
-#ifndef NDEBUG
-      std::cerr << "No results!" << "\n";
-#endif
-      return TglangLanguage::TGLANG_LANGUAGE_OTHER;
-    }
-
-    auto const & res = result.front();
-
-    // TODO: remove LABEL_PREFIX
-    converted = std::atoi(res.second.c_str() + std::strlen(LABEL_PREFIX));
-
-#ifndef NDEBUG
-    std::cerr << "Fasttext, class=" << res.second << ",converted=" << converted << ",prob=" << res.first << '\n';
-#endif
-
-    assert(converted <= TglangLanguage::TGLANG_LANGUAGE_YAML);
-  }
-
-  return static_cast<TglangLanguage>(converted);
+  return static_cast<TglangLanguage>(0);
 }
