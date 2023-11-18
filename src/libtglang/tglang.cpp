@@ -67,7 +67,6 @@ struct LibResources {
     to_replace.insert(replace_begin, replace_end);
 
     size_t blob_size = &_binary_fasttext_model_bin_end - &_binary_fasttext_model_bin_start;
-    std::cerr << "Blob size: " << blob_size << std::endl;
     std::string const model_str(&_binary_fasttext_model_bin_start, blob_size);
     std::istringstream model_blob(model_str, std::istringstream::in | std::istringstream::binary);
     model.loadModel(model_blob);
