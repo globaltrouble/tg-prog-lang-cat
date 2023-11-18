@@ -1,7 +1,7 @@
 #include "tglang.h"
 #include "symbols_to_replace.h"
 
-#include "fastText/src/fasttext.h"
+#include "fasttext.h"
 
 #include <atomic>
 #include <string>

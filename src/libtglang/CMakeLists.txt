@@ -5,7 +5,7 @@ project(tglang VERSION 1.0.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/fastText")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/deps/fastText")
 
 add_custom_target(
     generate_model_blob_obj_file
@@ -24,7 +24,9 @@ add_dependencies(generate_model_blob_obj_file copy_model_file)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO TRUE)
 
-add_library(tglang SHARED tglang.cpp)
-add_dependencies(tglang generate_model_blob_obj_file)
+add_library(tglang SHARED src/tglang.cpp)
+target_include_directories(tglang PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/deps/fastText/src")
 target_compile_options(tglang PRIVATE -Wall -Wextra -Werror -Wpedantic -Wno-error=sign-compare)
-target_link_libraries(tglang PRIVATE fasttext-static_pic pthread ${CMAKE_CURRENT_BINARY_DIR}/fasttext_model_blob.o)
+
+add_dependencies(tglang generate_model_blob_obj_file)
+target_link_libraries(tglang PUBLIC fasttext-static_pic pthread ${CMAKE_CURRENT_BINARY_DIR}/fasttext_model_blob.o)
