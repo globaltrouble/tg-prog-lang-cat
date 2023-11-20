@@ -174,6 +174,8 @@ int predict(std::stringstream & ss, FastText const & model, std::vector<std::pai
 }
 
 enum TglangLanguage tglang_detect_programming_language(const char *text) {
+  ProfileIt inf("Detecttotal");
+
   size_t const textLen = std::strlen(text);
   preprocess_text(text, textLen);
   std::stringstream ss(lib_sources.preprocessed.c_str());
@@ -185,7 +187,17 @@ enum TglangLanguage tglang_detect_programming_language(const char *text) {
   }
 
   int code_type = predict(ss, lib_sources.codetype_model, lib_sources.codeTypeResult, TglangLanguage::TGLANG_LANGUAGE_OTHER);
+  assert(code_type >= 0 && code_type <= TglangLanguage::TGLANG_LANGUAGE_XML);
 
-  assert(code_type >= 0 && code_type <= TglangLanguage::TGLANG_LANGUAGE_YAML);
+  if (code_type == TglangLanguage::TGLANG_LANGUAGE_C 
+    || code_type == TglangLanguage::TGLANG_LANGUAGE_CPLUSPLUS
+    || code_type == TglangLanguage::TGLANG_LANGUAGE_OBJECTIVE_C) {
+    // TODO: add C vs C++ vs ObjC
+  }
+  else if (code_type == TglangLanguage::TGLANG_LANGUAGE_JAVASCRIPT 
+    || code_type == TglangLanguage::TGLANG_LANGUAGE_TYPESCRIPT) {
+    // TODO: add JS vs TS
+  }
+
   return static_cast<TglangLanguage>(code_type);
 }

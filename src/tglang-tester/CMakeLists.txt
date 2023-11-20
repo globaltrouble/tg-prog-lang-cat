@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 
-project(tglang-tester VERSION 1.0.0 LANGUAGES C)
+project(tglang-tester VERSION 2.0.0 LANGUAGES C)
 
 add_executable(tglang-tester tglang-tester.c)
 
