@@ -69,6 +69,28 @@ struct LibResources {
   std::pair<re2::RE2, char const *> floating { R"(0[bB]([01])+)", "<num_float>" };
   std::pair<re2::RE2, char const *> integer { R"(-?\d+)", "<num_int>" };
 
+  std::pair<re2::RE2, char const *> exclexcl { R"(!!)", "<SPECIAL_EXCLAMATIONEXCLAMATION>" };
+  std::pair<re2::RE2, char const *> excldot { R"(!\.)", "<SPECIAL_EXCLAMATIONDOT>" };
+  std::pair<re2::RE2, char const *> notexclexcl { R"(!==)", "<SPECIAL_EXCLAMATIONEQUALEQUAL>" };
+  std::pair<re2::RE2, char const *> exceq { R"(!=)", "<SPECIAL_EXCLAMATIONEQUAL>" };
+  std::pair<re2::RE2, char const *> dollar { R"(\$\{)", "<SPECIAL_DOLLAR>" };
+  std::pair<re2::RE2, char const *> pp { R"(\+\+)", "<SPECIAL_PLUSPLUS>" };
+  std::pair<re2::RE2, char const *> mm { R"(--)", "<SPECIAL_MINUSMINUS>" };
+  std::pair<re2::RE2, char const *> marr { R"(->)", "<SPECIAL_MINUSGREATER>" };
+  std::pair<re2::RE2, char const *> dotexc { R"(\.!)", "<SPECIAL_DOTEXCLAMATION>" };
+  std::pair<re2::RE2, char const *> colon { R"(::)", "<SPECIAL_COLON>" };
+  std::pair<re2::RE2, char const *> qual { R"(:=)", "<SPECIAL_QUAL>" };
+  std::pair<re2::RE2, char const *> ll { R"(<<)", "<SPECIAL_LESSLESS>" };
+  std::pair<re2::RE2, char const *> le { R"(<=)", "<SPECIAL_LESSEQUAL>" };
+  std::pair<re2::RE2, char const *> eqeqeq { R"(===)", "<SPECIAL_EQUALEQUALEQUAL>" };
+  std::pair<re2::RE2, char const *> eqeq { R"(==)", "<SPECIAL_EQUALEQUAL>" };
+  std::pair<re2::RE2, char const *> ge { R"(=>)", "<SPECIAL_EQUALGREATER>" };
+  std::pair<re2::RE2, char const *> gg { R"(>>)", "<SPECIAL_GREATERGREATER>" };
+  std::pair<re2::RE2, char const *> qdot { R"(\?\.)", "<SPECIAL_QUESTIONDOT>" };
+  std::pair<re2::RE2, char const *> at { R"(@\()", "<SPECIAL_AT>" };
+  std::pair<re2::RE2, char const *> atat { R"(@@)", "<SPECIAL_ATAT>" };
+  std::pair<re2::RE2, char const *> bq { R"(\?;)", "<SPECIAL_BACKTICKQUESTION>" };
+
   std::string preprocessed;
   std::string match;
   std::vector<std::pair<fasttext::real, std::string>> isCodeResult;
@@ -111,6 +133,29 @@ void preprocess_text(char const * text, size_t const textLen) {
     // leave only ascii
     std::copy_if(text, text + textLen, std::back_inserter(lib_sources.preprocessed),  [](char c) { return !(c>=0 && c < 127);});
     lib_sources.preprocessed.append(text, textLen);
+
+    // replace special tokens
+    RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.exclexcl.first, lib_sources.exclexcl.second);
+    RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.excldot.first, lib_sources.excldot.second);
+    RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.notexclexcl.first, lib_sources.notexclexcl.second);
+    RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.exceq.first, lib_sources.exceq.second);
+    RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.dollar.first, lib_sources.dollar.second);
+    RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.pp.first, lib_sources.pp.second);
+    RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.mm.first, lib_sources.mm.second);
+    RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.marr.first, lib_sources.marr.second);
+    RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.dotexc.first, lib_sources.dotexc.second);
+    RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.colon.first, lib_sources.colon.second);
+    RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.qual.first, lib_sources.qual.second);
+    RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.ll.first, lib_sources.ll.second);
+    RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.le.first, lib_sources.le.second);
+    RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.eqeqeq.first, lib_sources.eqeqeq.second);
+    RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.eqeq.first, lib_sources.eqeq.second);
+    RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.ge.first, lib_sources.ge.second);
+    RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.gg.first, lib_sources.gg.second);
+    RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.qdot.first, lib_sources.qdot.second);
+    RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.at.first, lib_sources.at.second);
+    RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.atat.first, lib_sources.atat.second);
+    RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.bq.first, lib_sources.bq.second);
 
     // add spaces
     RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.add_spaces, R"( \1 )");
