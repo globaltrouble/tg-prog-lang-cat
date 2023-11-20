@@ -223,15 +223,16 @@ enum TglangLanguage tglang_detect_programming_language(const char *text) {
 
   size_t const textLen = std::strlen(text);
   preprocess_text(text, textLen);
-  std::stringstream ss(lib_sources.preprocessed.c_str());
+  std::stringstream ssIsCodr(lib_sources.preprocessed.c_str());
+  std::stringstream ssCodeType(lib_sources.preprocessed.c_str());
 
-  int is_code = predict(ss, lib_sources.iscode_model, lib_sources.isCodeResult, 0);
+  int is_code = predict(ssIsCodr, lib_sources.iscode_model, lib_sources.isCodeResult, 0);
   assert(is_code >= 0 && is_code <= 1);
   if (!is_code) {
     return TglangLanguage::TGLANG_LANGUAGE_OTHER;
   }
 
-  int code_type = predict(ss, lib_sources.codetype_model, lib_sources.codeTypeResult, TglangLanguage::TGLANG_LANGUAGE_OTHER);
+  int code_type = predict(ssCodeType, lib_sources.codetype_model, lib_sources.codeTypeResult, TglangLanguage::TGLANG_LANGUAGE_OTHER);
   assert(code_type >= 0 && code_type <= TglangLanguage::TGLANG_LANGUAGE_XML);
 
   if (code_type == TglangLanguage::TGLANG_LANGUAGE_C 
