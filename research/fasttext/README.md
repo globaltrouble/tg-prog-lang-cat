@@ -10,6 +10,8 @@ Our solution is structured into three key components:
    we introduce special tokens for specific programming language structures, such as changing ":=" to <SPECIAL_QUAL>.
    This facilitates the model's ability to identify languages employing these distinctive structures.
 
+   Preprocessing code can be foundin ascii_prepocesessing.py
+
 3. Code/No-Code FastText Classification
 
    In this stage, we employ a FastText classification model to differentiate between code and non-code segments.
@@ -22,3 +24,5 @@ Our solution is structured into three key components:
    Following the code/no-code classification, we predict the programming language of the given code
    snippet using a separate FastText classification model. This final step completes the language
    identification process, ensuring accuracy and efficiency in classifying programming languages.
+
+   Training code for both models can be found in fasttext-train.ipynb notebook
