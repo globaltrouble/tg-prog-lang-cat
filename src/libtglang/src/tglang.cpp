@@ -132,7 +132,6 @@ void preprocess_text(char const * text, size_t const textLen) {
 
     // leave only ascii
     std::copy_if(text, text + textLen, std::back_inserter(lib_sources.preprocessed),  [](char c) { return !(c>=0 && c < 127);});
-    lib_sources.preprocessed.append(text, textLen);
 
     // replace special tokens
     // RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.exclexcl.first, lib_sources.exclexcl.second);
