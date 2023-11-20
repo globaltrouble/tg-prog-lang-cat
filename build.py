@@ -255,7 +255,7 @@ def create_submission(_target, context):
         dst_path = os.path.join(RESOURCES_DIR, dst_path)
         to_archive.append((src_path, dst_path))
     
-    train_dir = os.path.join(context["source_dir"], TRAIN_DIR)
+    train_dir = os.path.join(context["source_dir"], "src", TRAIN_DIR)
     train_pattern = os.path.join(train_dir, "**")
     for src_path in glob.glob(train_pattern, recursive=True):
         assert(src_path.startswith(train_dir))
