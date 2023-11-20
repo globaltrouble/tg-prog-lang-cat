@@ -23,10 +23,12 @@ RUNNER_BINARY_NAME = "run-tglang.py"
 FASTTEXT_MODEL_ISCODE_FNAME = "fasttext-model-iscode.bin"
 FASTTEXT_MODEL_CODETYPE_FNAME = "fasttext-model-codetype.bin"
 DEP_PACKAGES_FNAME = "deb-packages.txt"
+README_FNAME = "README.md"
 
 BINARY_DIR = "bin"
 
 RESOURCES_DIR = "resources"
+TRAIN_DIR = "train"
 
 LIB_TARGET = "libtglang"
 TESTER_TARGET = "tglang-tester"
@@ -216,6 +218,7 @@ def create_submission(_target, context):
     to_archive = [
         (os.path.join(context["bin_dir"], LIB_BINARY_NAME), LIB_BINARY_NAME),   
         (os.path.join(context["source_dir"], "src", DEP_PACKAGES_FNAME), DEP_PACKAGES_FNAME),   
+        (os.path.join(context["source_dir"], "src", README_FNAME), README_FNAME),   
     ]
     
     for src_path in glob.glob(pattern, recursive=True):
@@ -250,6 +253,19 @@ def create_submission(_target, context):
         if dst_path.startswith("/"):
             dst_path = dst_path[1:]
         dst_path = os.path.join(RESOURCES_DIR, dst_path)
+        to_archive.append((src_path, dst_path))
+    
+    train_dir = os.path.join(context["source_dir"], TRAIN_DIR)
+    train_pattern = os.path.join(train_dir, "**")
+    for src_path in glob.glob(train_pattern, recursive=True):
+        assert(src_path.startswith(train_dir))
+        if os.path.isdir(src_path):
+            continue
+        
+        dst_path = src_path[len(train_dir):]
+        if dst_path.startswith("/"):
+            dst_path = dst_path[1:]
+        dst_path = os.path.join(TRAIN_DIR, dst_path)
         to_archive.append((src_path, dst_path))
     
     with zipfile.ZipFile(submission_fpath, "w") as arch:
