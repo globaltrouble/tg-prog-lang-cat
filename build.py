@@ -20,7 +20,8 @@ TESTER_BINARY_NAME = "tglang-tester"
 MULTITESTER_BINARY_NAME = "tglang-multitester"
 RUNNER_BINARY_NAME = "run-tglang.py"
 
-FASTTEXT_MODEL_FNAME = "fasttext-model.bin"
+FASTTEXT_MODEL_ISCODE_FNAME = "fasttext-model-iscode.bin"
+FASTTEXT_MODEL_CODETYPE_FNAME = "fasttext-model-codetype.bin"
 DEP_PACKAGES_FNAME = "deb-packages.txt"
 
 BINARY_DIR = "bin"
@@ -181,8 +182,10 @@ def copy_binaries(_target, context):
     runner = os.path.join(DEFAULT_SOURCE_PATH, "scripts", RUNNER_BINARY_NAME)
     bin_targets = [tester, multitester, lib, runner]
     
-    fasttext_model = os.path.join(context["source_dir"], "src", RESOURCES_DIR, FASTTEXT_MODEL_FNAME)
-    resource_targets = [fasttext_model]
+    fasttext_model_iscode = os.path.join(context["source_dir"], "src", RESOURCES_DIR, FASTTEXT_MODEL_ISCODE_FNAME)
+    fasttext_model_codetype = os.path.join(context["source_dir"], "src", RESOURCES_DIR, FASTTEXT_MODEL_CODETYPE_FNAME)
+    
+    resource_targets = [fasttext_model_iscode, fasttext_model_codetype]
 
     for f in bin_targets + resource_targets:
         if not os.path.exists(f):
