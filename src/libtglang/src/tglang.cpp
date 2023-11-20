@@ -160,7 +160,7 @@ void preprocess_text(char const * text, size_t const textLen) {
     RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.add_spaces, R"( \1 )");
     
     // change newline (single/multi) to a single special token
-    RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.newline, R"(<newline>)");
+    RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.newline, R"( <newline> )");
 
     // change_nums_to_tokens
     RE2::GlobalReplace(&lib_sources.preprocessed, lib_sources.bin.first, lib_sources.bin.second);
